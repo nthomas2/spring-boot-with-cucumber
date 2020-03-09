@@ -21,15 +21,15 @@ public class UserService {
         this.userCrudRepository = userCrudRepository;
     }
 
-    public User getUser(Long id) {
-        if (id == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is required to find a user.");
+    public User getUser(String email) {
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required to find a user.");
         }
 
-        Optional<User> user = userCrudRepository.findById(id);
+        Optional<User> user = userCrudRepository.findUserByEmail(email);
 
         if (!user.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find user");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find user.");
         } else {
             return user.get();
         }
@@ -52,8 +52,8 @@ public class UserService {
         }
     }
 
-    public User updateUser(User user) {
-        User foundUser = getUser(user.getId());
+    public User updateUser(String email, User user) {
+        User foundUser = getUser(email);
 
         if (!foundUser.getEmail().equalsIgnoreCase(user.getEmail())) {
             checkEmail(user.getEmail());
@@ -64,5 +64,18 @@ public class UserService {
         foundUser.setLastName(user.getLastName());
 
         return userCrudRepository.save(foundUser);
+    }
+
+    public void deleteUserByEmail(String email) {
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required to find a user.");
+        }
+
+        Optional<User> user = userCrudRepository.findUserByEmail(email);
+        if (!user.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find user.");
+        }
+
+        userCrudRepository.delete(user.get());
     }
 }
